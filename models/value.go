@@ -16,3 +16,4 @@ type Value struct {
 	} `json:"meta"`
 	Number Number `json:"number"`
 }
+

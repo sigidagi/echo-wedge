@@ -19,7 +19,8 @@ func NewValue() Controller {
 func (*valueController) GetAll(c echo.Context) error{
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	reply, _, err := WedgeCall("value", "get", nil, []string{netID, devID})
+	allIds := map[string]string{"netId": netID, "devId": devID}
+	reply, _, err := WedgeCallValue(allIds)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
@@ -34,8 +35,9 @@ func (*valueController) GetOne(c echo.Context)error{
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
+	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID}
 
-	reply, _, err := WedgeCall("value", "get", nil, []string{valID, devID, netID})
+	_, reply, err := WedgeCallValue(allIds)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-
-	"github.com/io-m/echo-wedge/models"
 )
 
 // Interface is an interface for TCPClient server communication
@@ -13,8 +11,12 @@ type Interface interface {
 	Start()
 	Write([]byte) error
 	ReadNetwork() *JSONRPCResponseNetwork
-	Read() *JSONRPCResponse
+	ReadDeviceOne() *JSONResponseOneDevice
+	ReadDeviceValue() *JSONResponseValueDevice
 }
+
+// ================================
+// JSON RPC Client data
 
 // Meta is struct for metadata
 type Meta struct {
@@ -42,67 +44,7 @@ type JSONRPC struct {
         Method  string `json:"method"`
         Params  Params `json:"params"`
 }
-
-
-// ValueResponse is struct embedded in value response
-type ValueResponseNet struct {
-        Name string `json:"name"`
-        Device []models.Device `json:"device"`
-}
-// Result is struct from response
-type ResultNet struct {
-        Value ValueResponseNet `json:"value"`
-}
-
-
-
-// ===================
-type ResultValue struct {
-	Child []struct {
-		Type    string `json:"type"`
-		Version string `json:"version"`
-	} `json:"child"`
-	Id    []string `json:"id"`
-	More  bool     `json:"mode"`
-	Count int      `json:"count"`
-	Meta  struct {
-		Type    string `json:"type"`
-		Version string `json:"version"`
-	} `json:"meta"`
-}
-
-
-type Result struct {
-	Value ResultValue `json:"value"`
-	Meta  struct {
-		ServerSendTime string `json:"server_send_time"`
-	} `json:"meta"`
-}
-
-// ===================
-
-// ErrorResponse is struct embedded insinde JSON response
-type ErrorResponse struct {
-        Code int32 `json:"code"`
-        Message string `json:"message"`
-}
-// JSONRPCResponse is struct for Sending API gtw's response
-type JSONRPCResponse struct {
-        ID      string `json:"id"`
-        Jsonrpc string `json:"jsonrpc"`
-        Result Result  `json:"result"`
-        Error ErrorResponse `json:"error"`
-}
-// JSONRPCResponseNetwork is struct for Sending API gtw's response
-type JSONRPCResponseNetwork struct {
-        ID      string `json:"id"`
-        Jsonrpc string `json:"jsonrpc"`
-        Result ResultNet  `json:"result"`
-        Error ErrorResponse `json:"error"`
-}
-
-
-
+// =======================================
 
 // TCPClient struct
 type TCPClient struct {
@@ -143,6 +85,8 @@ func (c *TCPClient) Write(message []byte) error {
         }
         return nil
 }
+
+// ReadNetwork is method for sending Network details to frontend client
 func (c *TCPClient) ReadNetwork() *JSONRPCResponseNetwork {
         data := new(JSONRPCResponseNetwork)
         reply := make([]byte, 4096)
@@ -159,8 +103,10 @@ func (c *TCPClient) ReadNetwork() *JSONRPCResponseNetwork {
         fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
         return data
 }
-func (c *TCPClient) Read() *JSONRPCResponse {
-        data := new(JSONRPCResponse)
+
+// ReadDeviceValue is method for sending Device or Value list to frontend client
+func (c *TCPClient) ReadDeviceValue() *JSONResponseValueDevice {
+        data := new(JSONResponseValueDevice)
         reply := make([]byte, 4096)
         nb, err := c.Conn.Read(reply)
         newBuff := make([]byte, nb)
@@ -175,3 +121,75 @@ func (c *TCPClient) Read() *JSONRPCResponse {
         fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
         return data
 }
+
+// ReadDeviceOne is method for sending Device detail to frontend client
+func (c *TCPClient) ReadDeviceOne() *JSONResponseOneDevice {
+        data := new(JSONResponseOneDevice)
+        reply := make([]byte, 4096)
+        nb, err := c.Conn.Read(reply)
+        newBuff := make([]byte, nb)
+        newBuff = reply[:nb]
+        if err != nil {
+                panic(err)
+        }
+        if err = json.Unmarshal(newBuff, &data); err != nil {
+                fmt.Println("Unmarshalling error:",err)
+                return nil
+        }
+        fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
+        return data
+}
+
+// ReadValueOne is method for sending Network details to frontend client
+func (c *TCPClient) ReadValueOne() *JSONResponseOneValue{
+        data := new(JSONResponseOneValue)
+        reply := make([]byte, 4096)
+        nb, err := c.Conn.Read(reply)
+        newBuff := make([]byte, nb)
+        newBuff = reply[:nb]
+        if err != nil {
+                panic(err)
+        }
+        if err = json.Unmarshal(newBuff, &data); err != nil {
+                fmt.Println("Unmarshalling error:",err)
+                return nil
+        }
+        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
+        return data
+}
+
+// ReadState is method for sending State details to frontend client
+func (c *TCPClient) ReadState() *JSONResponseState{
+        data := new(JSONResponseState)
+        reply := make([]byte, 4096)
+        nb, err := c.Conn.Read(reply)
+        newBuff := make([]byte, nb)
+        newBuff = reply[:nb]
+        if err != nil {
+                panic(err)
+        }
+        if err = json.Unmarshal(newBuff, &data); err != nil {
+                fmt.Println("Unmarshalling error:",err)
+                return nil
+        }
+        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
+        return data
+}
+// ReadStateOne is method for sending State details to frontend client
+func (c *TCPClient) ReadStateOne() *JSONResponseOneState{
+        data := new(JSONResponseOneState)
+        reply := make([]byte, 4096)
+        nb, err := c.Conn.Read(reply)
+        newBuff := make([]byte, nb)
+        newBuff = reply[:nb]
+        if err != nil {
+                panic(err)
+        }
+        if err = json.Unmarshal(newBuff, &data); err != nil {
+                fmt.Println("Unmarshalling error:",err)
+                return nil
+        }
+        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
+        return data
+}
+
