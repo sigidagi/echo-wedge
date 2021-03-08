@@ -17,7 +17,8 @@ func NewNetwork() Controller {
 // HANDLERS
 
 func (*networkController) GetAll(c echo.Context) error{
-	reply, err := WedgeCallNetwork("")
+	allIds := map[string]string{}
+	reply, err := WedgeCallNetwork(allIds)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
@@ -29,7 +30,8 @@ func (*networkController) GetAll(c echo.Context) error{
 
 func (*networkController) GetOne(c echo.Context)error{
 	netID := c.Param("netId")
-	reply, err := WedgeCallNetwork(netID)
+	allIds := map[string]string{"netId": netID}
+	reply, err := WedgeCallNetwork(allIds)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}

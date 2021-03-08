@@ -30,9 +30,9 @@ func findExact(id string, mapp map[string]string) string {
 }
 
 // WedgeCallNetwork is helper function for making tcp call to API gtw server for data related to network
-func WedgeCallNetwork(id ...string) (*client.JSONRPCResponseNetwork, error) {
+func WedgeCallNetwork(ids map[string]string) (*client.JSONRPCResponseNetwork, error) {
 	tcpClient.Start()
-	if len(id) == 0 {
+	if _, ok := ids["netId"]; !ok {
 		in = &client.JSONRPC{
 			ID:      uuid.New().String(),
 			Jsonrpc: "2.0",
@@ -41,30 +41,41 @@ func WedgeCallNetwork(id ...string) (*client.JSONRPCResponseNetwork, error) {
 				URL: fmt.Sprintf("/"),
 			},
 		}
+		b, err := json.Marshal(in)
+		if err != nil {
+			fmt.Println(err.Error())
+			return nil, err
+		}
+
+		if err = tcpClient.Write(b); err != nil {
+			return nil, err
+		}
+		netData := tcpClient.ReadNetwork()
+		return netData, nil
 	}
-	if len(id) == 1 {
+	if _, ok := ids["netId"]; ok  {
+		netID := findExact("netId", ids)
 		in = &client.JSONRPC{
 			ID:      uuid.New().String(),
 			Jsonrpc: "2.0",
 			Method:  http.MethodGet,
 			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s", id[0]),
+				URL: fmt.Sprintf("/network/%s", netID),
 			},
 		}
-	}
-	b, err := json.Marshal(in)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err
-	}
+		b, err := json.Marshal(in)
+		if err != nil {
+			fmt.Println(err.Error())
+			return nil, err
+		}
 
-	if err = tcpClient.Write(b); err != nil {
-		return nil, err
+		if err = tcpClient.Write(b); err != nil {
+			return nil, err
+		}
+		netData := tcpClient.ReadNetwork()
+		return netData, nil
 	}
-	netData := tcpClient.ReadNetwork()
-
-	return netData, nil
-
+	return nil, errors.New("Something went wrong with Network API call")
 }
 
 // WedgeCallDevice is helper function for making tcp call to API gtw server for data related to device
