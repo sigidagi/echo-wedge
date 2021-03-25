@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/io-m/echo-wedge/client"
+	client "github.com/io-m/echo-wedge/backend/tcpClient"
 )
 
 var (
@@ -38,7 +38,7 @@ func WedgeCallNetwork(ids map[string]string) (*client.JSONRPCResponseNetwork, er
 			Jsonrpc: "2.0",
 			Method:  http.MethodGet,
 			Params: client.Params {
-				URL: fmt.Sprintf("/"),
+				URL: "/",
 			},
 		}
 		b, err := json.Marshal(in)
@@ -75,11 +75,11 @@ func WedgeCallNetwork(ids map[string]string) (*client.JSONRPCResponseNetwork, er
 		netData := tcpClient.ReadNetwork()
 		return netData, nil
 	}
-	return nil, errors.New("Something went wrong with Network API call")
+	return nil, errors.New("something went wrong with network api call")
 }
 
 // WedgeCallDevice is helper function for making tcp call to API gtw server for data related to device
-func WedgeCallDevice (ids map[string]string) (*client.JSONResponseValueDevice, *client.JSONResponseOneDevice , error) {
+func WedgeCallDevice(ids map[string]string) (*client.JSONResponseValueDevice, *client.JSONResponseOneDevice , error) {
 	tcpClient.Start()
 	if _, ok := ids["devId"]; !ok {
 		netID := findExact("netId", ids)
@@ -126,7 +126,7 @@ func WedgeCallDevice (ids map[string]string) (*client.JSONResponseValueDevice, *
 		devDataOne := tcpClient.ReadDeviceOne()
 		return nil, devDataOne, nil
 	}
-	return nil, nil, errors.New("Something went wrong with Device API call")
+	return nil, nil, errors.New("something went wrong with device api call")
 }
 
 // WedgeCallValue is helper function for making tcp call to API gtw server for data related to value
@@ -179,7 +179,7 @@ func WedgeCallValue(ids map[string]string) (*client.JSONResponseValueDevice, *cl
 		valDataOne := tcpClient.ReadValueOne()
 		return nil, valDataOne, nil
 	}
-	return nil, nil, errors.New("Something went wrong with Value API call")
+	return nil, nil, errors.New("something went wrong with value api call")
 }
 // WedgeCallState is helper function for making tcp call to API gtw server for data related to state
 func WedgeCallState(ids map[string]string) (*client.JSONResponseState, *client.JSONResponseOneState, error) {
@@ -234,5 +234,5 @@ func WedgeCallState(ids map[string]string) (*client.JSONResponseState, *client.J
 		return nil, stateDataOne, nil
 	}
 
-	return nil, nil, errors.New("Something went wrong with State API call")
+	return nil, nil, errors.New("something went wrong with state api call")
 }

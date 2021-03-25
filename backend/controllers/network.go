@@ -44,3 +44,6 @@ func (*networkController) GetOne(c echo.Context)error{
 func (*networkController) Update(c echo.Context)error{
 	return nil
 }
+
+
+

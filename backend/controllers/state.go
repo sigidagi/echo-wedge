@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+
 type stateController struct{}
 
 // NewState is constructor for new instances of Controller interface
@@ -49,21 +50,10 @@ func (*stateController) GetOne(c echo.Context)error{
 }
 
 func (*stateController) Update(c echo.Context)error{
-	// netID := c.Param("id")
-	// devID := c.Param("devId")
-	// valID := c.Param("valId")
-	// stateID := c.Param("stateId")
 
-	// state := &client.StateWg{}
-	// if err := c.Bind(state); err != nil {
-	// 	return err
-	// }
-	// reply, err := WedgeCall("state", "put", state, []string{stateID})
-	// if err != nil {
-	// 	return c.JSON(http.StatusNotFound, err)
-	// }
-	// log.Println("Response from Update State")
-
-	// return c.JSON(http.StatusOK, reply)
 	return nil
 }
+
+
+
+

@@ -49,3 +49,5 @@ func (*valueController) GetOne(c echo.Context)error{
 func (*valueController) Update(c echo.Context)error{
 	return nil
 }
+
+

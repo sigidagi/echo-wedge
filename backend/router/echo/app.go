@@ -3,7 +3,7 @@ package echo
 import (
 	"github.com/labstack/echo/v4"
 
-	"github.com/io-m/echo-wedge/controllers"
+	"github.com/io-m/echo-wedge/backend/controllers"
 )
 
 var (
@@ -11,12 +11,18 @@ var (
 	nc = controllers.NewNetwork()
 	vc = controllers.NewValue()
 	sc = controllers.NewState()
+	ec = controllers.NewEvent()
 ) 
 
 
 // RunApp is an entry point to the app
 func RunApp() {
 	r := echo.New()
+
+	// Websocket connection
+	r.GET("/subscribe", ec.PushUpdates)
+	// enpoint for receiveing data from tcp server
+	r.POST("/apigtw", ec.Receive)
 
 	// Network endpoints
 	r.GET("/network", nc.GetAll)
@@ -37,5 +43,7 @@ func RunApp() {
 
 	// ============================
 	// Server running ...
-	r.Logger.Fatal(r.Start("localhost:8080"))
+
+	r.Logger.Fatal(r.Start("localhost:8000"))
+
 }

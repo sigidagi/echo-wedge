@@ -46,3 +46,4 @@ func (*deviceController) GetOne(c echo.Context)error{
 func (*deviceController) Update(c echo.Context)error{
 	return nil
 }
+
