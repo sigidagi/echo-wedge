@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -19,13 +20,11 @@ func NewValue() Controller {
 func (*valueController) GetAll(c echo.Context) error{
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID}
-	reply, _, err := WedgeCallValue(allIds)
+	reply, err := WedgeCallAllValues(fmt.Sprintf("/network/%s/device/%s/value", netID, devID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
 	log.Println("Response from GET ALL Value")
-
 	return c.JSON(http.StatusOK, reply)
 }
 
@@ -35,9 +34,7 @@ func (*valueController) GetOne(c echo.Context)error{
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID}
-
-	_, reply, err := WedgeCallValue(allIds)
+	reply, err := WedgeCallOneValue(fmt.Sprintf("/network/%s/device/%s/value/%s", netID, devID, valID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}

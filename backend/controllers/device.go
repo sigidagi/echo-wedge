@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,8 +19,7 @@ func NewDevice() Controller {
 
 func (*deviceController) GetAll(c echo.Context) error{
 	netID := c.Param("netId")
-	allIDs := map[string]string{"netId": netID}
-	reply, _, err := WedgeCallDevice(allIDs)
+	reply, err := WedgeCallAllDevices(fmt.Sprintf("/network/%s/device", netID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
@@ -33,9 +33,8 @@ func (*deviceController) GetAll(c echo.Context) error{
 func (*deviceController) GetOne(c echo.Context)error{
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIDs := map[string]string{"netId": netID, "devId": devID}
 
-	_, reply, err := WedgeCallDevice(allIDs)
+	reply, err := WedgeCallOneDevice(fmt.Sprintf("/network/%s/device/%s", netID, devID))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}

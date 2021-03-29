@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -21,8 +22,7 @@ func (*stateController) GetAll(c echo.Context) error{
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID}
-	reply, _, err := WedgeCallState(allIds)
+	reply, err := WedgeCallAllStates(fmt.Sprintf("/network/%s/device/%s/value/%s/state", netID, devID, valID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
@@ -38,9 +38,7 @@ func (*stateController) GetOne(c echo.Context)error{
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID, "stateId": stateID}
-
-	_, reply, err := WedgeCallState(allIds)
+	reply, err := WedgeCallOneState(fmt.Sprintf("/network/%s/device/%s/value/%s/state/%s", netID, devID, valID, stateID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}

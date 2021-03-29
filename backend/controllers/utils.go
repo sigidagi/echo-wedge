@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -18,221 +17,243 @@ var (
 	in = &client.JSONRPC{}
 )
 
-func findExact(id string, mapp map[string]string) string {
-	var exactID string
-	for k, v := range mapp {
-		if id == k {
-			exactID = v 
-			return exactID
-		}
+// WedgeCallAllNetworks is helper function for making tcp call to API gtw server for data related to network
+func WedgeCallAllNetworks(url string) (*client.JSONRPCResponseNetwork, error) {
+	tcpClient.Start()
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
 	}
-	return ""
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}	
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	allNetworks := new(client.JSONRPCResponseNetwork)
+	netData, err := tcpClient.ReadData(allNetworks)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := netData.(*client.JSONRPCResponseNetwork)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
 }
 
-// WedgeCallNetwork is helper function for making tcp call to API gtw server for data related to network
-func WedgeCallNetwork(ids map[string]string) (*client.JSONRPCResponseNetwork, error) {
+func WedgeCallOneNetwork(url string) (*client.JSONRPCResponseNetwork, error) {
 	tcpClient.Start()
-	if _, ok := ids["netId"]; !ok {
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: "/",
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, err
-		}
-		netData := tcpClient.ReadNetwork()
-		return netData, nil
+	in = &client.JSONRPC {
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
 	}
-	if _, ok := ids["netId"]; ok  {
-		netID := findExact("netId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s", netID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, err
-		}
-		netData := tcpClient.ReadNetwork()
-		return netData, nil
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
 	}
-	return nil, errors.New("something went wrong with network api call")
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	oneNetwork := new(client.JSONRPCResponseNetwork)
+	netData, err := tcpClient.ReadData(oneNetwork)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := netData.(*client.JSONRPCResponseNetwork)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
 }
 
-// WedgeCallDevice is helper function for making tcp call to API gtw server for data related to device
-func WedgeCallDevice(ids map[string]string) (*client.JSONResponseValueDevice, *client.JSONResponseOneDevice , error) {
+
+
+// WedgeCallAllDevices is helper function for making tcp call to API gtw server for data related to device
+func WedgeCallAllDevices(url string) (*client.JSONResponseValueDevice, error) {
 	tcpClient.Start()
-	if _, ok := ids["devId"]; !ok {
-		netID := findExact("netId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device", netID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		devData := tcpClient.ReadDeviceValue()
-		return devData, nil, nil
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
 	}
-	if _, ok := ids["devId"]; ok {
-		netID := findExact("netId", ids)
-		devID := findExact("devId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device/%s", netID, devID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		devDataOne := tcpClient.ReadDeviceOne()
-		return nil, devDataOne, nil
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
 	}
-	return nil, nil, errors.New("something went wrong with device api call")
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	allDevices := new(client.JSONResponseValueDevice)
+	devData, err := tcpClient.ReadData(allDevices)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseValueDevice)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
+}
+	
+func WedgeCallOneDevice(url string) (*client.JSONResponseOneDevice, error) {
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
+	}
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	oneDevice := new(client.JSONResponseOneDevice)
+	devData, err := tcpClient.ReadData(oneDevice)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseOneDevice)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
 }
 
-// WedgeCallValue is helper function for making tcp call to API gtw server for data related to value
-func WedgeCallValue(ids map[string]string) (*client.JSONResponseValueDevice, *client.JSONResponseOneValue , error) {
+// WedgeCallAllValues is helper function for making tcp call to API gtw server for data related to value
+func WedgeCallAllValues(url string) (*client.JSONResponseValueDevice, error) {
 	tcpClient.Start()
-	if _, ok := ids["valId"]; !ok {
-		netID := findExact("netId", ids)
-		devID := findExact("devId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device/%s/value", netID, devID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		valData := tcpClient.ReadDeviceValue()
-		return valData, nil, nil
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
 	}
-	if _, ok := ids["valId"]; ok {
-		netID := findExact("netId", ids)
-		devID := findExact("devId", ids)
-		valID := findExact("valId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device/%s/value/%s", netID, devID, valID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		valDataOne := tcpClient.ReadValueOne()
-		return nil, valDataOne, nil
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
 	}
-	return nil, nil, errors.New("something went wrong with value api call")
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	allValues := new(client.JSONResponseValueDevice)
+	devData, err := tcpClient.ReadData(allValues)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseValueDevice)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
 }
-// WedgeCallState is helper function for making tcp call to API gtw server for data related to state
-func WedgeCallState(ids map[string]string) (*client.JSONResponseState, *client.JSONResponseOneState, error) {
+func WedgeCallOneValue(url string) (*client.JSONResponseOneValue, error) {
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
+	}
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	oneValue := new(client.JSONResponseOneValue)
+	devData, err := tcpClient.ReadData(oneValue)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseOneValue)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
+}
+	
+// WedgeCallAllStates is helper function for making tcp call to API gtw server for data related to state
+func WedgeCallAllStates(url string) (*client.JSONResponseState, error) {
 	tcpClient.Start()
-	if _, ok := ids["stateId"]; !ok {
-		netID := findExact("netId", ids)
-		devID := findExact("devId", ids)
-		valID := findExact("valId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device/%s/value/%s/state", netID, devID, valID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		stateData := tcpClient.ReadState()
-		return stateData, nil, nil
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
 	}
-	if _, ok := ids["stateId"]; ok {
-		netID := findExact("netId", ids)
-		devID := findExact("devId", ids)
-		valID := findExact("valId", ids)
-		stateID := findExact("stateId", ids)
-		in = &client.JSONRPC{
-			ID:      uuid.New().String(),
-			Jsonrpc: "2.0",
-			Method:  http.MethodGet,
-			Params: client.Params {
-				URL: fmt.Sprintf("/network/%s/device/%s/value/%s/state/%s", netID, devID, valID, stateID),
-			},
-		}
-		b, err := json.Marshal(in)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil, nil, err
-		}
-
-		if err = tcpClient.Write(b); err != nil {
-			return nil, nil, err
-		}
-		stateDataOne := tcpClient.ReadStateOne()
-		return nil, stateDataOne, nil
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
 	}
-
-	return nil, nil, errors.New("something went wrong with state api call")
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	allStates := new(client.JSONResponseState)
+	devData, err := tcpClient.ReadData(allStates)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseState)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
+}
+func WedgeCallOneState(url string) (*client.JSONResponseOneState, error) {
+	in = &client.JSONRPC{
+		ID:      uuid.New().String(),
+		Jsonrpc: "2.0",
+		Method:  http.MethodGet,
+		Params: client.Params {
+			URL: url,
+		},
+	}
+	b, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	if err = tcpClient.Write(b); err != nil {
+		return nil, err
+	}
+	oneState := new(client.JSONResponseOneState)
+	devData, err := tcpClient.ReadData(oneState)
+	if err != nil {
+		return nil, err
+	}
+	data, ok := devData.(*client.JSONResponseOneState)
+	if !ok {
+		return nil, nil
+	}
+	return data, nil
 }

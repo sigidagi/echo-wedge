@@ -10,9 +10,7 @@ import (
 type Interface interface {
 	Start()
 	Write([]byte) error
-	ReadNetwork() *JSONRPCResponseNetwork
-	ReadDeviceOne() *JSONResponseOneDevice
-	ReadDeviceValue() *JSONResponseValueDevice
+	ReadData(interface{}) (interface{}, error)
 }
 
 // ================================
@@ -86,110 +84,17 @@ func (c *TCPClient) Write(message []byte) error {
         return nil
 }
 
-// ReadNetwork is method for sending Network details to frontend client
-func (c *TCPClient) ReadNetwork() *JSONRPCResponseNetwork {
-        data := new(JSONRPCResponseNetwork)
+func (c *TCPClient) ReadData(data interface{}) (interface{}, error) {
         reply := make([]byte, 4096)
         nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
+        buff := reply[:nb]
         if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
-        return data
-}
-
-// ReadDeviceValue is method for sending Device or Value list to frontend client
-func (c *TCPClient) ReadDeviceValue() *JSONResponseValueDevice {
-        data := new(JSONResponseValueDevice)
-        reply := make([]byte, 4096)
-        nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
-        if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
-        return data
-}
-
-// ReadDeviceOne is method for sending Device detail to frontend client
-func (c *TCPClient) ReadDeviceOne() *JSONResponseOneDevice {
-        data := new(JSONResponseOneDevice)
-        reply := make([]byte, 4096)
-        nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
-        if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
-        return data
-}
-
-// ReadValueOne is method for sending Network details to frontend client
-func (c *TCPClient) ReadValueOne() *JSONResponseOneValue{
-        data := new(JSONResponseOneValue)
-        reply := make([]byte, 4096)
-        nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
-        if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
-        return data
-}
-
-// ReadState is method for sending State details to frontend client
-func (c *TCPClient) ReadState() *JSONResponseState{
-        data := new(JSONResponseState)
-        reply := make([]byte, 4096)
-        nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
-        if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
-        return data
-}
-// ReadStateOne is method for sending State details to frontend client
-func (c *TCPClient) ReadStateOne() *JSONResponseOneState{
-        data := new(JSONResponseOneState)
-        reply := make([]byte, 4096)
-        nb, err := c.Conn.Read(reply)
-        newBuff := make([]byte, nb)
-        newBuff = reply[:nb]
-        if err != nil {
-                panic(err)
-        }
-        if err = json.Unmarshal(newBuff, &data); err != nil {
-                fmt.Println("Unmarshalling error:",err)
-                return nil
-        }
-        fmt.Printf("<<-- from server VALUE data:\t %v\n", string(newBuff))
-        return data
-}
-
+            return data, err
+        }   
+        if err = json.Unmarshal(buff, &data); err != nil {
+            fmt.Println("Unmarshalling error:", err)
+            return data, err
+        }   
+        fmt.Printf("<<-- from server data:\t %v\n", string(buff))
+        return data, nil
+} 

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -17,12 +18,10 @@ func NewNetwork() Controller {
 // HANDLERS
 
 func (*networkController) GetAll(c echo.Context) error{
-	allIds := map[string]string{}
-	reply, err := WedgeCallNetwork(allIds)
+	reply, err := WedgeCallAllNetworks("/")
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
-	
 	return c.JSON(http.StatusOK, reply)
 }
 
@@ -30,8 +29,7 @@ func (*networkController) GetAll(c echo.Context) error{
 
 func (*networkController) GetOne(c echo.Context)error{
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID}
-	reply, err := WedgeCallNetwork(allIds)
+	reply, err := WedgeCallOneNetwork(fmt.Sprintf("/network/%s", netID))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
