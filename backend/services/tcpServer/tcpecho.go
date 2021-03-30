@@ -4,34 +4,52 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	m "github.com/io-m/echo-wedge/backend/models"
 	"log"
 	"net"
 	"net/http"
-	"strconv"
-
-	client "github.com/io-m/echo-wedge/backend/tcpClient"
 )
 
-// Listen is method of Subscripiton object for listening to all incomming tcp client connection (such as API Gtw. incomming data)
-func Listen(port int) {
-	strPort := strconv.Itoa(port)
-	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", strPort))
-	if err != nil {
-		panic(err)
+var (
+	tcpserver *server
+)
+
+type server struct {
+	Port int
+	Host string
+}
+
+func New(host string, port int) *server {
+	return &server{
+		Host: host,
+		Port: port,
 	}
-	ch := make(chan *client.JSONRPC)
+}
+
+func Setup() error {
+
+	tcpserver = New("127.0.0.1", 8060)
+	go tcpserver.serve()
+	return nil
+}
+
+// Listen is method of Subscripiton object for listening to all incomming tcp client connection (such as API Gtw. incomming data)
+func (s *server) serve() {
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
+	if err != nil {
+		log.Fatalf("Error starting TCP server: %s", err.Error())
+	}
+	defer ln.Close()
+
+	ch := make(chan *m.JSONRPC)
 	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			panic(err)
-		}
-		
-		log.Println("Connection established with : ", conn.RemoteAddr())
+		conn, _ := ln.Accept()
+		//log.Println("Connection established with : ", conn.RemoteAddr())
+
 		go func(c net.Conn) {
-			
 			defer c.Close()
-			
-			data := &client.JSONRPC{}
+
+			data := &m.JSONRPC{}
 			buffer := make([]byte, 4096)
 			bn, err := c.Read(buffer)
 			if err != nil {
@@ -40,20 +58,20 @@ func Listen(port int) {
 			if err := json.Unmarshal(buffer[:bn], &data); err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println(data)
 			ch <- (data)
 		}(conn)
-		dataToSend := <- ch
+		dataToSend := <-ch
 
 		dispatchForward(dataToSend, 8000)
 	}
 }
 
-func dispatchForward(sd *client.JSONRPC, port int) {
+func dispatchForward(sd *m.JSONRPC, port int) {
 	bdata, _ := json.Marshal(sd.Params.Data)
+	fmt.Printf("Push state update: %s\n", string(bdata))
 	cl := &http.Client{}
 	pushedData := bytes.NewBuffer(bdata)
-	resp, err := cl.Post(fmt.Sprintf("http://localhost:%d/apigtw", port), "application/json",pushedData)
+	resp, err := cl.Post(fmt.Sprintf("http://localhost:%d/apigtw", port), "application/json", pushedData)
 	if err != nil {
 		resp.Body.Close()
 		log.Fatal(err)

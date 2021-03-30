@@ -1,12 +1,11 @@
 package controllers
 
 import (
+	"fmt"
+	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
-
-	"github.com/labstack/echo/v4"
 )
-
 
 type stateController struct{}
 
@@ -17,12 +16,13 @@ func NewState() Controller {
 
 // HANDLERS
 
-func (*stateController) GetAll(c echo.Context) error{
+func (*stateController) GetAll(c echo.Context) error {
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID}
-	reply, _, err := WedgeCallState(allIds)
+
+	url := fmt.Sprintf("/network/%s/device/%s/value/%s/state", netID, devID, valID)
+	reply, err := WedgeCallItemList(url)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
@@ -31,29 +31,22 @@ func (*stateController) GetAll(c echo.Context) error{
 	return c.JSON(http.StatusOK, reply)
 }
 
-
-
-func (*stateController) GetOne(c echo.Context)error{
+func (*stateController) GetOne(c echo.Context) error {
 	stateID := c.Param("stateId")
 	valID := c.Param("valId")
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIds := map[string]string{"netId": netID, "devId": devID, "valId": valID, "stateId": stateID}
 
-	_, reply, err := WedgeCallState(allIds)
+	url := fmt.Sprintf("/network/%s/device/%s/value/%s/state/%s", netID, devID, valID, stateID)
+	reply, err := WedgeCallState(url)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
 	log.Println("Response from GET ONE State")
 	return c.JSON(http.StatusOK, reply)
-	
 }
 
-func (*stateController) Update(c echo.Context)error{
+func (*stateController) Update(c echo.Context) error {
 
 	return nil
 }
-
-
-
-

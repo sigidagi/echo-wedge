@@ -12,8 +12,7 @@ var (
 	vc = controllers.NewValue()
 	sc = controllers.NewState()
 	ec = controllers.NewEvent()
-) 
-
+)
 
 // RunApp is an entry point to the app
 func RunApp() {

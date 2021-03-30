@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
-
-	"github.com/labstack/echo/v4"
 )
 
 type deviceController struct{}
@@ -14,28 +14,24 @@ func NewDevice() Controller {
 	return &deviceController{}
 }
 
-// HANDLERS
-
-func (*deviceController) GetAll(c echo.Context) error{
+func (*deviceController) GetAll(c echo.Context) error {
 	netID := c.Param("netId")
-	allIDs := map[string]string{"netId": netID}
-	reply, _, err := WedgeCallDevice(allIDs)
+	url := fmt.Sprintf("/network/%s/device", netID)
+	reply, err := WedgeCallItemList(url)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, err)
 	}
-	
-	log.Println("Response from GET ALL Device", reply)
+
+	log.Println("Response from GET ALL Devices", reply)
 	return c.JSON(http.StatusOK, reply)
 }
 
-
-
-func (*deviceController) GetOne(c echo.Context)error{
+func (*deviceController) GetOne(c echo.Context) error {
 	devID := c.Param("devId")
 	netID := c.Param("netId")
-	allIDs := map[string]string{"netId": netID, "devId": devID}
 
-	_, reply, err := WedgeCallDevice(allIDs)
+	url := fmt.Sprintf("/network/%s/device/%s", netID, devID)
+	reply, err := WedgeCallDevice(url)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -43,7 +39,6 @@ func (*deviceController) GetOne(c echo.Context)error{
 	return c.JSON(http.StatusOK, reply)
 }
 
-func (*deviceController) Update(c echo.Context)error{
+func (*deviceController) Update(c echo.Context) error {
 	return nil
 }
-
