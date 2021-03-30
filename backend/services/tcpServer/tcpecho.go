@@ -44,8 +44,6 @@ func (s *server) serve() {
 	ch := make(chan *m.JSONRPC)
 	for {
 		conn, _ := ln.Accept()
-		//log.Println("Connection established with : ", conn.RemoteAddr())
-
 		go func(c net.Conn) {
 			defer c.Close()
 
@@ -68,7 +66,7 @@ func (s *server) serve() {
 
 func dispatchForward(sd *m.JSONRPC, port int) {
 	bdata, _ := json.Marshal(sd.Params.Data)
-	fmt.Printf("Push state update: %s\n", string(bdata))
+	//fmt.Printf("Push state update: %s\n", string(bdata))
 	cl := &http.Client{}
 	pushedData := bytes.NewBuffer(bdata)
 	resp, err := cl.Post(fmt.Sprintf("http://localhost:%d/apigtw", port), "application/json", pushedData)
