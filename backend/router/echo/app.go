@@ -1,9 +1,9 @@
 package echo
 
 import (
+	"echo-wedge/backend/config"
+	"echo-wedge/backend/controllers"
 	"github.com/labstack/echo/v4"
-
-	"github.com/io-m/echo-wedge/backend/controllers"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 )
 
 // RunApp is an entry point to the app
-func RunApp() {
+func RunApp(conf config.Config) error {
 	r := echo.New()
 
 	// Websocket connection
@@ -43,6 +43,9 @@ func RunApp() {
 	// ============================
 	// Server running ...
 
-	r.Logger.Fatal(r.Start("localhost:8000"))
+	if err := r.Start(conf.Rest.Url); err != nil {
+		return err
+	}
 
+	return nil
 }

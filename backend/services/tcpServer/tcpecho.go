@@ -2,10 +2,11 @@ package tcpServer
 
 import (
 	"bytes"
+	"echo-wedge/backend/config"
+	m "echo-wedge/backend/models"
 	"encoding/json"
 	"fmt"
-	m "github.com/io-m/echo-wedge/backend/models"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 )
@@ -15,27 +16,29 @@ var (
 )
 
 type server struct {
-	Port int
-	Host string
+	Bind string
 }
 
-func New(host string, port int) *server {
+func New(bind string) *server {
 	return &server{
-		Host: host,
-		Port: port,
+		Bind: bind,
 	}
 }
 
-func Setup() error {
+func Setup(c config.Config) error {
 
-	tcpserver = New("127.0.0.1", 8060)
+	log.WithFields(log.Fields{
+		"bind": c.Rest.Bind,
+	}).Info("api: starting tcp server for gateway messages")
+
+	tcpserver = New(c.Rest.Bind)
 	go tcpserver.serve()
 	return nil
 }
 
 // Listen is method of Subscripiton object for listening to all incomming tcp client connection (such as API Gtw. incomming data)
 func (s *server) serve() {
-	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.Host, s.Port))
+	ln, err := net.Listen("tcp", s.Bind)
 	if err != nil {
 		log.Fatalf("Error starting TCP server: %s", err.Error())
 	}

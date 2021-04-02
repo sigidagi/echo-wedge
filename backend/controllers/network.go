@@ -20,7 +20,7 @@ func (*networkController) GetAll(c echo.Context) error {
 
 	reply, err := WedgeCallNetwork("/")
 	if err != nil {
-		return c.JSON(http.StatusNotFound, err)
+		return c.JSON(http.StatusGatewayTimeout, err)
 	}
 	return c.JSON(http.StatusOK, reply)
 }

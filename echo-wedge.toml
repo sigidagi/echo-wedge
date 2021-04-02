@@ -1,0 +1,8 @@
+# Rest service configuration
+#
+[gateway]
+url="localhost:8051"
+
+[rest]
+bind="localhost:8060"
+url="127.0.0.1:8000"

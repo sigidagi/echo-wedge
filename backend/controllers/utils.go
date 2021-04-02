@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	m "github.com/io-m/echo-wedge/backend/models"
-	cl "github.com/io-m/echo-wedge/backend/tcpClient"
+	m "echo-wedge/backend/models"
+	cl "echo-wedge/backend/tcpClient"
 	"net/http"
 )
 

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	ws "github.com/gorilla/websocket"
-	m "github.com/io-m/echo-wedge/backend/models"
+	m "echo-wedge/backend/models"
 	"github.com/labstack/echo/v4"
 )
 

@@ -1,9 +1,10 @@
 package client
 
 import (
+	"echo-wedge/backend/config"
 	"encoding/json"
 	"errors"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -13,32 +14,31 @@ var (
 
 // TCPClient struct
 type TCPClient struct {
-	Host string
-	Port int
+	Url  string
 	Conn *net.TCPConn
 }
 
 // NewClient is constructor function for new instances of TCP client
-func newClient(host string, port int) *TCPClient {
+func newClient(host string) *TCPClient {
 	client := &TCPClient{
-		Host: host,
-		Port: port,
+		Url: host,
 	}
 	return client
 }
 
-func Setup() error {
+func Setup(c config.Config) error {
 
-	port := 8051
-	fmt.Printf("Connecting to Wedge on %d port", port)
+	log.WithFields(log.Fields{
+		"url": c.Gateway.Url,
+	}).Info("api: setup tcp gateway client..")
 
-	Backend = newClient("localhost", port)
+	Backend = newClient(c.Gateway.Url)
 	return nil
 }
 
 // Start TCPClient
-func (c *TCPClient) connect() error {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", c.Host, c.Port))
+func (cl *TCPClient) connect() error {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", cl.Url)
 	if err != nil {
 		return err
 	}
@@ -47,19 +47,19 @@ func (c *TCPClient) connect() error {
 	if err != nil {
 		return err
 	}
-	c.Conn = conn
+	cl.Conn = conn
 	return nil
 }
 
-func (c *TCPClient) Write(message []byte) error {
+func (cl *TCPClient) Write(message []byte) error {
 
-	if err := c.connect(); err != nil { // error
-		fmt.Printf("Can not connecto to the Wedge: %s", err.Error())
+	if err := cl.connect(); err != nil { // error
+		log.Errorf("Can not connecto to the Wedge: %s", err.Error())
 		return errors.New("No connection with Wedge")
 	}
 
-	fmt.Printf("-->> json\n %s\n", string(message))
-	_, err := c.Conn.Write(message)
+	//fmt.Printf("-->> json\n %s\n", string(message))
+	_, err := cl.Conn.Write(message)
 	if err != nil {
 		return err
 	}
@@ -77,10 +77,10 @@ func (c *TCPClient) ReadData(data interface{}) (interface{}, error) {
 	}
 
 	if err := json.Unmarshal(newBuff, &data); err != nil {
-		fmt.Println("Unmarshalling error:", err)
+		log.Warnf("Unmarshalling error:", err)
 		return data, err
 	}
-	fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
+	//fmt.Printf("<<-- from server:\n %v\n", string(newBuff))
 	c.Conn.Close()
 	return data, nil
 }
